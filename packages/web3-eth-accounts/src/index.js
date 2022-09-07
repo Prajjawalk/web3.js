@@ -34,6 +34,9 @@ var {TransactionFactory} = require('@ethereumjs/tx');
 var Common = require('@ethereumjs/common').default;
 var HardForks = require('@ethereumjs/common').Hardfork;
 var ethereumjsUtil = require('ethereumjs-util');
+const crypto = require("crypto");
+require('./qrllib-js')
+const txHelper = require('./helper/tx')
 
 var isNot = function(value) {
     return (typeof value === 'undefined') || value === null;
@@ -73,7 +76,7 @@ var Accounts = function Accounts() {
         }),
         new Method({
             name: 'getTransactionCount',
-            call: 'eth_getTransactionCount',
+            call: 'zond_getTransactionCount',
             params: 2,
             inputFormatter: [function(address) {
                 if (utils.isAddress(address)) {
@@ -127,7 +130,8 @@ Accounts.prototype._addAccountFunctions = function(account) {
 };
 
 Accounts.prototype.create = function create(entropy) {
-    return this._addAccountFunctions(Account.create(entropy || utils.randomHex(32)));
+    // return this._addAccountFunctions(Account.create(entropy || utils.randomHex(32)));
+    return this._addAccountFunctions(dilithium.New());
 };
 
 Accounts.prototype.privateKeyToAccount = function privateKeyToAccount(privateKey, ignoreLength) {
@@ -136,11 +140,12 @@ Accounts.prototype.privateKeyToAccount = function privateKeyToAccount(privateKey
     }
 
     // 64 hex characters + hex-prefix
-    if (!ignoreLength && privateKey.length !== 66) {
-        throw new Error("Private key must be 32 bytes long");
+    if (!ignoreLength && privateKey.length !== 98) {
+        throw new Error("Private key must be 98 bytes long");
     }
 
-    return this._addAccountFunctions(Account.fromPrivate(privateKey));
+    // return this._addAccountFunctions(Account.fromPrivate(privateKey));
+    return this._addAccountFunctions(dilithium.NewFromSeed(privateKey))
 };
 
 Accounts.prototype.signTransaction = function signTransaction(tx, privateKey, callback) {
@@ -235,27 +240,31 @@ Accounts.prototype.signTransaction = function signTransaction(tx, privateKey, ca
             if (privateKey.startsWith('0x')) {
                 privateKey = privateKey.substring(2);
             }
-            var ethTx = TransactionFactory.fromTxData(transaction, transactionOptions);
-            var signedTx = ethTx.sign(Buffer.from(privateKey, 'hex'));
-            var validationErrors = signedTx.validate(true);
+            // var ethTx = TransactionFactory.fromTxData(transaction, transactionOptions);
+            // var signedTx = ethTx.sign(Buffer.from(privateKey, 'hex'));
+            let d = dilithium.NewFromSeed(privateKey)
+            txHelper.SignTx(transaction, d)
+            // var validationErrors = signedTx.validate(true);
 
-            if (validationErrors.length > 0) {
-                let errorString = 'Signer Error: '
-                for(const validationError of validationErrors) {
-                    errorString += `${errorString} ${validationError}.`
-                }
-                throw new Error(errorString);
-            }
 
-            var rlpEncoded = signedTx.serialize().toString('hex');
-            var rawTransaction = '0x' + rlpEncoded;
-            var transactionHash = utils.keccak256(rawTransaction);
+            // if (validationErrors.length > 0) {
+            //     let errorString = 'Signer Error: '
+            //     for(const validationError of validationErrors) {
+            //         errorString += `${errorString} ${validationError}.`
+            //     }
+            //     throw new Error(errorString);
+            // }
+
+            // var rlpEncoded = signedTx.serialize().toString('hex');
+            // var rawTransaction = '0x' + rlpEncoded;
+            var rawTransaction = transaction
+            var transactionHash = txHelper.GenerateTxSigningHash(transaction).slice(2);
 
             var result = {
-                messageHash: '0x' + Buffer.from(signedTx.getMessageToSign(true)).toString('hex'),
-                v: '0x' + signedTx.v.toString('hex'),
-                r: '0x' + signedTx.r.toString('hex'),
-                s: '0x' + signedTx.s.toString('hex'),
+                // messageHash: '0x' + Buffer.from(signedTx.getMessageToSign(true)).toString('hex'),
+                v: '0x' ,//+ signedTx.v.toString('hex'),
+                r: '0x' ,//+ signedTx.r.toString('hex'),
+                s: '0x' ,//+ signedTx.s.toString('hex'),
                 rawTransaction: rawTransaction,
                 transactionHash: transactionHash
             };
@@ -460,7 +469,7 @@ Accounts.prototype.hashMessage = function hashMessage(data) {
     var preamble = '\x19Ethereum Signed Message:\n' + messageBytes.length;
     var preambleBuffer = Buffer.from(preamble);
     var ethMessage = Buffer.concat([preambleBuffer, messageBuffer]);
-    return ethereumjsUtil.bufferToHex(ethereumjsUtil.keccak256(ethMessage));
+    return '0x' + crypto.createHash('sha256').update(ethMessage).digest('hex');
 };
 
 Accounts.prototype.sign = function sign(data, privateKey) {
@@ -469,12 +478,14 @@ Accounts.prototype.sign = function sign(data, privateKey) {
     }
 
     // 64 hex characters + hex-prefix
-    if (privateKey.length !== 66) {
-        throw new Error("Private key must be 32 bytes long");
+    if (privateKey.length !== 98) {
+        throw new Error("Private key must be 98 bytes long");
     }
+    var dilithium_acc = dilithium.NewFromSeed(privateKey)
 
     var hash = this.hashMessage(data);
-    var signature = Account.sign(hash, privateKey);
+    // var signature = Account.sign(hash, privateKey);
+    var signature = dilithium_acc.Sign(hash)
     var vrs = Account.decodeSignature(signature);
     return {
         message: data,

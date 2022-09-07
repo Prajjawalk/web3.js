@@ -45,7 +45,7 @@ var blockCall = function (args) {
 };
 
 var transactionFromBlockCall = function (args) {
-    return (typeof args[0] === 'string' && args[0].indexOf('0x') === 0) ? 'eth_getTransactionByBlockHashAndIndex' : 'eth_getTransactionByBlockNumberAndIndex';
+    return (typeof args[0] === 'string' && args[0].indexOf('0x') === 0) ? 'zond_getTransactionByBlockHashAndIndex' : 'zond_getTransactionByBlockNumberAndIndex';
 };
 
 var uncleCall = function (args) {
@@ -53,7 +53,7 @@ var uncleCall = function (args) {
 };
 
 var getBlockTransactionCountCall = function (args) {
-    return (typeof args[0] === 'string' && args[0].indexOf('0x') === 0) ? 'eth_getBlockTransactionCountByHash' : 'eth_getBlockTransactionCountByNumber';
+    return (typeof args[0] === 'string' && args[0].indexOf('0x') === 0) ? 'zond_getBlockTransactionCountByHash' : 'zond_getBlockTransactionCountByNumber';
 };
 
 var uncleCountCall = function (args) {
@@ -519,20 +519,20 @@ var Eth = function Eth() {
         }),
         new Method({
             name: 'sendSignedTransaction',
-            call: 'eth_sendRawTransaction',
+            call: 'zond_sendRawTransaction',
             params: 1,
             inputFormatter: [null],
             abiCoder: abi
         }),
         new Method({
             name: 'signTransaction',
-            call: 'eth_signTransaction',
+            call: 'zond_signTransaction',
             params: 1,
             inputFormatter: [formatter.inputTransactionFormatter]
         }),
         new Method({
             name: 'sendTransaction',
-            call: 'eth_sendTransaction',
+            call: 'zond_sendTransaction',
             params: 1,
             inputFormatter: [formatter.inputTransactionFormatter],
             abiCoder: abi
@@ -549,14 +549,14 @@ var Eth = function Eth() {
         }),
         new Method({
             name: 'call',
-            call: 'eth_call',
+            call: 'zond_call',
             params: 2,
             inputFormatter: [formatter.inputCallFormatter, formatter.inputDefaultBlockNumberFormatter],
             abiCoder: abi
         }),
         new Method({
             name: 'estimateGas',
-            call: 'eth_estimateGas',
+            call: 'zond_estimateGas',
             params: 1,
             inputFormatter: [formatter.inputCallFormatter],
             outputFormatter: utils.hexToNumber

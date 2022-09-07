@@ -920,10 +920,10 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
         if(args.type === 'call') {
             payload.params.push(formatters.inputDefaultBlockNumberFormatter.call(this._parent, args.defaultBlock));
-            payload.method = 'eth_call';
+            payload.method = 'zond_call';
             payload.format = this._parent._decodeMethodReturn.bind(null, this._method.outputs);
         } else {
-            payload.method = 'eth_sendTransaction';
+            payload.method = 'zond_sendTransaction';
         }
 
         return payload;
@@ -973,7 +973,7 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
             var call = (new Method({
                 name: 'call',
-                call: 'eth_call',
+                call: 'zond_call',
                 params: 2,
                 inputFormatter: [formatters.inputCallFormatter, formatters.inputDefaultBlockNumberFormatter],
                 // add output formatter for decoding
@@ -1049,7 +1049,7 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
             var sendTransaction = (new Method({
                 name: 'sendTransaction',
-                call: 'eth_sendTransaction',
+                call: 'zond_sendTransaction',
                 params: 1,
                 inputFormatter: [formatters.inputTransactionFormatter],
                 requestManager: _this._parent._requestManager,
