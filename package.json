@@ -1,15 +1,15 @@
 {
     "name": "web3.js",
     "private": true,
-    "description": "Ethereum JavaScript API wrapper repository",
+    "description": "QRL JavaScript API wrapper repository",
     "license": "LGPL-3.0",
     "engines": {
         "node": ">=11.0.0"
     },
-    "main": "./packages/web3/src/index.js",
+    "main": "./packages/zond-web3js/src/index.js",
     "bundlesize": [
         {
-            "path": "./packages/web3/dist/web3.min.js",
+            "path": "./packages/zond-web3js/dist/web3.min.js",
             "maxSize": "1.5 mB",
             "compression": "none"
         }
